@@ -11,7 +11,8 @@ import numpy as n
 import matplotlib.pyplot as plt
 from scipy import signal
 
-config_file = '../Data/' + 'Temp_Struct_Mrin1_log_2014-12-17_18-46-29.log'
+config_file = '../Data/' + 'Temp_Struct_Alan_log_2014-12-23_15-07-43.log'
+'
 f=open(config_file)
 accuracy_track = 0
 init_params = yaml.load(f.readline())

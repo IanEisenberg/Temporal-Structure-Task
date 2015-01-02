@@ -31,7 +31,7 @@ class psychTask:
     """ class defining a psychological experiment
     """
     
-    def __init__(self,config_file,subject_code,verbose=True, bot = None):
+    def __init__(self,config_file,subject_code,verbose=True, fullscreen = False, bot = None):
             
         self.taskname=[]
         self.subject_code=subject_code
@@ -53,6 +53,7 @@ class psychTask:
         self.trialnum = 0
         self.track_response = []
         self.action_keys = []
+        self.fullscreen = fullscreen
         self.bot = bot
         self.bot_on = False
         if self.bot:
@@ -86,7 +87,7 @@ class psychTask:
         data['taskdata']=self.alldata
         save_data_to_db(data,'psychtask')
 
-    def setupWindow(self,fullscr=False):
+    def setupWindow(self,fullscr= self.fullscreen):
         """ set up the main window
         """
         self.win = visual.Window(self.window_dims,allowGUI=True, fullscr=fullscr, monitor='testMonitor', units='deg')

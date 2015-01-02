@@ -19,17 +19,18 @@ subdata=[]
 
 # set things up for training and tests
 
-subject_code = '000'
-block_len = random.choice(range(10,22,2))
+subject_code = 'Barbara'
+#block_len = random.choice(range(10,22,2))
+block_len = 12
 probs = (.9,.1)
-config_file = make_config.makeConfigList(iden = subject_code, block_len = block_len, 
+config_file = makeConfigList(iden = subject_code, block_len = block_len, 
                              probs1 = probs, probs2 = probs)
 bot = test_bot.test_bot(config_file)
 
 #************************************
 # Start training
 #************************************
-task=psychTask(config_file,subject_code, bot = None)
+task=psychTask(config_file,subject_code, fullscreen = fullscr, bot = None)
 task.writeToLog(task.toJSON())
 
 # prepare to start
