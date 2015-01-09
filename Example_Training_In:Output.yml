@@ -1,0 +1,84 @@
+#Example configuration file and logged output from a training set
+
+#Example config File
+#Config Parameters
+---
+FBDuration: 1.0
+action_keys:
+- j
+- k
+- l
+- h
+block_len: 16
+clearAfterResponse: 1
+id: 000
+quit_key: q
+responseWindow: 1.0
+stim_ids:
+- 0
+- 1
+stimulusDuration: 1.0
+taskname: Temp_Struct
+tasksets:
+  ts1:
+    actions:
+    - j
+    - k
+    probs: &id001 !!python/tuple
+    - 0.85
+    - 0.15
+  ts2:
+    actions:
+    - l
+    - h
+    probs: *id001
+trigger_key: '5'
+
+#Parameters for two trials
+
+---
+FBonset: 0.5
+PosFB_correct: true    #If true, than FB will be positive when the response was correct
+PosFB_incorrect: false #If true, than FB will be positive when the response was incorrect
+TS:
+  actions:
+  - l
+  - h
+  probs: !!python/tuple #Probability for PosFB_correct, and PosFB_incorrect to be true, respectively
+  - 0.85
+  - 0.15
+correct_action: h
+onset: 1
+stim: 1
+---
+FBonset: 0.5
+PosFB_correct: true
+PosFB_incorrect: false
+TS:
+  actions:
+  - l
+  - h
+  probs: !!python/tuple
+  - 0.85
+  - 0.15
+correct_action: h
+onset: 4.259816914031054
+stim: 1
+
+
+
+#Example output
+
+#First line - task parameters
+{"stimulusDuration": 1.0, "textStim": [], "win": [], "trialnum": 0, "taskname": "Temp_Struct", "id": "Alan", "track_response": [], "subject_code": "Alan", 
+"loadedStimulusFile": "../Config_Files/Temp_Struct_Alan_config_2014-12-23_15-07-41.yaml", "action_keys": ["j", "h", "l", "k"], 
+"taskinfo": {"stimulusDuration": 1.0, "block_len": 16, "responseWindow": 1.0, "tasksets": {"ts2": {"probs": [0.85, 0.15], "actions": ["l", "k"]}, "ts1": {"probs": [0.85, 0.15], "actions": ["j", "h"]}}, 
+"FBDuration": 1.0, "quit_key": "q", "stim_ids": [0, 1], "taskname": "Temp_Struct", "trigger_key": "5", "clearAfterResponse": 1, "id": "Alan", "action_keys": ["j", "h", "l", "k"]}, 
+"config_file": "../Config_Files/Temp_Struct_Alan_config_2014-12-23_15-07-41.yaml", "tasksets": {"ts2": {"probs": [0.85, 0.15], "actions": ["l", "k"]}, "ts1": {"probs": [0.85, 0.15], "actions": ["j", "h"]}}, 
+"timestamp": "2014-12-23_15-07-43", "window_dims": [800, 600], "quit_key": "q", "startTime": [], "stim_ids": [0, 1], "responseWindow": 1.0, "block_len": 16, "bot_on": false, "FBDuration": 1.0, 
+"logfilename": "Temp_Struct_Alan_log_2014-12-23_15-07-43.log", "trigger_times": [], "trigger_key": "5", "clearAfterResponse": 1}
+
+
+#Output from a trial 
+{"PosFB_correct": true, "FB": [], "stimulusCleared": 1.0010789469233714, "actualOnsetTime": 1.0028731760103256, "response": "NA", "rt": [], "FBonset": 0.5, 
+"stim": 1, "correct_action": "k", "TS": {"probs": [0.85, 0.15], "actions": ["l", "k"]}, "onset": 1, "PosFB_incorrect": false, "trial_duration": 1.0}
