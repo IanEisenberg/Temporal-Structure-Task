@@ -5,7 +5,7 @@ generic task using psychopy
 from psychopy import visual, core, event, logging, data, misc, sound
 import sys,os
 import yaml
-import numpy
+import numpy as np
 import datetime
 import json
 
@@ -14,12 +14,12 @@ try:
 except:
     pass
 
-def numpy_to_list(d):
+def np_to_list(d):
     d_fixed={}
     for k in d.iterkeys():
-        if isinstance(d[k],numpy.ndarray) and d[k].ndim==1:
+        if isinstance(d[k],np.ndarray) and d[k].ndim==1:
             d_fixed[k]=[x for x in d[k]]
-            print 'converting %s from numpy array to list'%k
+            print 'converting %s from np array to list'%k
         else:
             #print 'copying %s'%k
             d_fixed[k]=d[k]
@@ -30,8 +30,8 @@ class tempStructTest:
     """ class defining a psychological experiment
     """
     
-    def __init__(self,config_file,subject_code,verbose=True, bot = None):
-            
+    def __init__(self,config_file,subject_code,verbose=True, fullscreen = False, bot = None):
+        
         self.taskname=[]
         self.subject_code=subject_code
         self.win=[]
@@ -50,9 +50,13 @@ class tempStructTest:
         self.trigger_times=[]
         self.config_file=config_file
         self.trialnum = 0
+        self.track_response = []
         self.action_keys = []
+        self.fullscreen = fullscreen
         self.bot = bot
-        
+        self.bot_on = False
+        if self.bot:
+            self.bot_on = True
         try:
             self.loadStimulusFileYAML(config_file)
         except:
@@ -85,7 +89,7 @@ class tempStructTest:
     def setupWindow(self,fullscr=False):
         """ set up the main window
         """
-        self.win = visual.Window(self.window_dims,allowGUI=True, fullscr=fullscr, monitor='testMonitor', units='deg')
+        self.win = visual.Window(self.window_dims,allowGUI=True, fullscr=self.fullscreen, monitor='testMonitor', units='deg')
         self.win.setColor('black')
         self.win.flip()
         self.win.flip()
@@ -210,7 +214,7 @@ class tempStructTest:
         trial['stimulusCleared']=0
         trial['response']=[]
         trial['rt']=[]
-        trialDuration=numpy.max([self.stimulusDuration,self.responseWindow])
+        trialDuration=np.max([self.stimulusDuration,self.responseWindow])
         trial['trial_duration']=trialDuration
         while core.getTime() < (onsetTime + trialDuration):
             key_response=event.getKeys(None,True)

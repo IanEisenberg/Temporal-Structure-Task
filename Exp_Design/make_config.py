@@ -5,7 +5,7 @@ Created on Thu Nov 20 16:13:45 2014
 @author: admin
 """
 
-import numpy as n 
+import numpy as np
 import random as r
 import yaml
 import datetime
@@ -53,19 +53,19 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2), pr
             local_var = []
             while (abs(mean_stim - .5) >= .1) or (0 in local_var):
                 stims = r.sample(stim_ids*int(block_len*.8),block_len)
-                mean_stim = n.mean(stims)
-                local_var = [n.var(stims[i:i+4]) for i in range(block_len-4)]
+                mean_stim = np.mean(stims)
+                local_var = [np.var(stims[i:i+4]) for i in range(block_len-4)]
             #Alternate tasksets
             curr_ts = tasksets[keys[block%2]]
             
             probs_c = curr_ts['probs'][0]
             probs_i = curr_ts['probs'][1]
             counts = [1000,1000]
-            ideal_counts = n.round(n.array(curr_ts['probs'])*block_len)
+            ideal_counts = np.round(np.array(curr_ts['probs'])*block_len)
             while (abs(counts-ideal_counts) >= [2,2]).any():
-                PosFB_c = n.random.binomial(1,probs_c,block_len)
-                PosFB_i = n.random.binomial(1,probs_i,block_len)
-                counts = n.array([sum(PosFB_c),sum(PosFB_i)])
+                PosFB_c = np.random.binomial(1,probs_c,block_len)
+                PosFB_i = np.random.binomial(1,probs_i,block_len)
+                counts = np.array([sum(PosFB_c),sum(PosFB_i)])
             
 
             for trial in range(block_len):

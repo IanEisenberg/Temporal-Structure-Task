@@ -5,7 +5,7 @@ generic task using psychopy
 from psychopy import visual, core, event, logging, data, misc, sound
 import sys,os
 import yaml
-import numpy
+import numpy as np
 import datetime
 import json
 import random as r
@@ -15,12 +15,12 @@ try:
 except:
     pass
 
-def numpy_to_list(d):
+def np_to_list(d):
     d_fixed={}
     for k in d.iterkeys():
-        if isinstance(d[k],numpy.ndarray) and d[k].ndim==1:
+        if isinstance(d[k],np.ndarray) and d[k].ndim==1:
             d_fixed[k]=[x for x in d[k]]
-            print 'converting %s from numpy array to list'%k
+            print 'converting %s from np array to list'%k
         else:
             #print 'copying %s'%k
             d_fixed[k]=d[k]
@@ -87,10 +87,10 @@ class psychTask:
         data['taskdata']=self.alldata
         save_data_to_db(data,'psychtask')
 
-    def setupWindow(self,fullscr= self.fullscreen):
+    def setupWindow(self):
         """ set up the main window
         """
-        self.win = visual.Window(self.window_dims,allowGUI=True, fullscr=fullscr, monitor='testMonitor', units='deg')
+        self.win = visual.Window(self.window_dims,allowGUI=True, fullscr=self.fullscreen, monitor='testMonitor', units='deg')
         self.win.setColor('black')
         self.win.flip()
         self.win.flip()
@@ -113,15 +113,10 @@ class psychTask:
         return core.getTime()
 
     def defineStims(self):
-        self.stims = [visual.Circle(self.win, radius = 3, fillColor = 'red'),
-                      visual.Circle(self.win, radius = 3, fillColor = 'blue')]
+        self.stims = [visual.Circle(self.win, radius = 3, lineColor = 'red', fillColor = 'red'),
+                      visual.Circle(self.win, radius = 3, lineColor = 'blue', fillColor = 'blue')]
         r.shuffle(self.stims)
-        self.fixation = visual.ShapeStim(self.win, vertices=((0, -0.5), (0, 0.5), (0,0),
-                                                        (-0.5,0), (0.5, 0)),
-                                        lineWidth=5,
-                                        closeShape=False,
-                                        lineColor='white'
-                                        )
+
     def clearWindow(self):
         """ clear the main window
         """
@@ -137,7 +132,6 @@ class psychTask:
         - this is primarily for waiting to start a task
         - use getResponse to get responses on a task
         """
-
         start=False
         event.clearEvents()
         while start==False:
@@ -160,7 +154,6 @@ class psychTask:
     def closeWindow(self):
         """ close the main window
         """
-        
         if self.win:
             self.win.close()
 
@@ -205,9 +198,6 @@ class psychTask:
             time_win = self.trialnum
         return sum(self.track_response[-time_win:])
         
-        
-        
-    
     def presentTrialWithFB(self,trial):
         """
         This function presents a stimuli, waits for a response, tracks the
@@ -229,14 +219,12 @@ class psychTask:
         trial['response']=[]
         trial['rt']=[]
         trial['FB'] = []
-        trialDuration=numpy.max([self.stimulusDuration,self.responseWindow])
+        trialDuration=np.max([self.stimulusDuration,self.responseWindow])
         trial['trial_duration']=trialDuration
         while core.getTime() < (onsetTime + trialDuration):
             key_response=event.getKeys(None,True)
             if self.bot and self.bot_on:
                 choice = self.bot.choose(trial['stim'])
-                #print('state: ' + str(trial['stim']))
-                #print(self.action_keys.index(choice[0]))
                 core.wait(choice[1])
                 key_response = [(choice[0], core.getTime())]
             if len(key_response)==0:
@@ -275,13 +263,18 @@ class psychTask:
                         self.win.flip()
                         core.wait(self.FBDuration)
                         self.clearWindow()     
-            if core.getTime() > (onsetTime+self.stimulusDuration) and trial['stimulusCleared']==0:
-                self.clearWindow()
-                trial['stimulusCleared']=core.getTime()-onsetTime
+        #If subject did not respond within the stimulus window clear the stim
+        #and admonish the subject
         if trial['stimulusCleared']==0:
             self.clearWindow()
             trial['stimulusCleared']=core.getTime()-onsetTime
             trial['response'] = 'NA'
+            trial['stimulusCleared']=core.getTime()-onsetTime
+            core.wait(.5)
+            self.textStim.setText('Please Respond Faster')
+            self.win.flip()
+            core.wait(1)
+            self.clearWindow()
         self.track_response+=[response_acc]
         return trial
             

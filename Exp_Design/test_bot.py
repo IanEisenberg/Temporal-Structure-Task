@@ -4,7 +4,7 @@ Define a bot to run temp_struct_task
 """
 
 import yaml
-import numpy as n
+import numpy as np
 import random as r
 
 class test_bot:
@@ -115,10 +115,10 @@ class Qlearning:
         self.last_state = state
         num_exposures = sum(self.Qstate_num[state])
         T = max(1-(num_exposures)*.01,.1)
-        Qstates = n.array(self.Qstates[state])
-        expQ = n.exp(Qstates/T)
+        Qstates = np.array(self.Qstates[state])
+        expQ = np.exp(Qstates/T)
         softmax = expQ/sum(expQ)
-        self.last_action = n.random.choice(self.actions,1,p = softmax)[0]
+        self.last_action = np.random.choice(self.actions,1,p = softmax)[0]
         return self.last_action
                 
         
