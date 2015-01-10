@@ -32,26 +32,19 @@ class tempStructTest:
     
     def __init__(self,config_file,subject_code,verbose=True, fullscreen = False, bot = None):
         
-        self.taskname=[]
         self.subject_code=subject_code
         self.win=[]
         self.window_dims=[800,600]
         self.textStim=[]
-        self.quit_key=[]
-        self.trigger_key=[]
         self.stimulusInfo=[]
         self.loadedStimulusFile=[]
         self.startTime=[]
-        self.stimulusDuration=[]
-        self.FBDuration=[]
-        self.responseWindow=[]
         self.alldata=[]
         self.timestamp=datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         self.trigger_times=[]
         self.config_file=config_file
         self.trialnum = 0
         self.track_response = []
-        self.action_keys = []
         self.fullscreen = fullscreen
         self.bot = bot
         self.bot_on = False
@@ -63,28 +56,49 @@ class tempStructTest:
             print 'cannot load config file'
             sys.exit()
                                                         
-        self.logfilename='%s_%s_Test_log_%s.log'%(self.taskname,self.subject_code,self.timestamp)
+        self.logfilename='%s_%s_test_log_%s.log'%(self.taskname,self.subject_code,self.timestamp)
+        self.datafilename='%s_%s_test_data_%s'%(self.taskname,self.subject_code,self.timestamp)
 
-    def toJSON(self):
-        """ log the initial conditions for the task 
+    def loadStimulusFileYAML(self,filename):
+        """ load a stimulus file in YAML format
         """
-        init_dict = {k:self.__dict__[k] for k in self.__dict__.iterkeys() if k not in ('stimulusInfo', 'alldata', 'bot')}
+        if not os.path.exists(filename):
+            raise BaseException('Stimulus file not found')
+        yaml_iterator=yaml.load_all(file(filename,'r'))
+        for trial in yaml_iterator:
+            if trial.has_key('taskname'):
+                self.taskinfo=trial
+                for k in self.taskinfo.iterkeys():
+                    self.__dict__[k]=self.taskinfo[k]
+            else:
+                self.stimulusInfo.append(trial)
+        if len(self.stimulusInfo)>0:
+            self.loadedStimulusFile=filename
+            
+    def toJSON(self):
+        """ log the initial conditions for the task. Exclude the list of all
+        trials (stimulusinfo), the bot, and taskinfo (self.__dict__ includes 
+        all of the same information as taskinfo)
+        """
+        init_dict = {k:self.__dict__[k] for k in self.__dict__.iterkeys() if k 
+                    not in ('stimulusInfo', 'alldata', 'bot', 'taskinfo')}
         return json.dumps(init_dict)
     
-    def writeToLog(self,msg,loc = '../Data/'):
+    def writeToLog(self,msg,loc = '../Log/'):
         f=open(str(loc) + self.logfilename,'a')
         f.write(msg)
         f.write('\n')
         f.close()
          
-    def writeDataToCouchdb(self):
-        data={}
+    def writeData(self, loc = '../Data/'):
+        data = {}
         data['taskinfo']=self.taskinfo
         data['configfile']=self.config_file
         data['subcode']=self.subject_code
         data['timestamp']=self.timestamp
         data['taskdata']=self.alldata
-        save_data_to_db(data,'psychtask')
+        f=open(str(loc) + self.datafilename + '.yaml','w')
+        yaml.dump(data,f)
 
     def setupWindow(self,fullscr=False):
         """ set up the main window
@@ -114,12 +128,7 @@ class tempStructTest:
     def defineStims(self):
         self.stims = [visual.Circle(self.win, radius = 3, fillColor = 'red'),
                       visual.Circle(self.win, radius = 3, fillColor = 'blue')]
-        self.fixation = visual.ShapeStim(self.win, vertices=((0, -0.5), (0, 0.5), (0,0),
-                                                        (-0.5,0), (0.5, 0)),
-                                        lineWidth=5,
-                                        closeShape=False,
-                                        lineColor='white'
-                                        )
+
     def clearWindow(self):
         """ clear the main window
         """
@@ -129,13 +138,11 @@ class tempStructTest:
         else:
             self.presentTextToWindow('')
 
-
     def waitForKeypress(self,key=[]):
         """ wait for a keypress and return the pressed key
         - this is primarily for waiting to start a task
         - use getResponse to get responses on a task
         """
-
         start=False
         event.clearEvents()
         while start==False:
@@ -178,30 +185,13 @@ class tempStructTest:
         except:
             print 'unable to save data to couchbd'
         
-    def loadStimulusFileYAML(self,filename):
-        """ load a stimulus file in YAML format
-        """
-        if not os.path.exists(filename):
-            raise BaseException('Stimulus file not found')
-        yaml_iterator=yaml.load_all(file(filename,'r'))
-        for trial in yaml_iterator:
-            if trial.has_key('taskname'):
-                self.taskinfo=trial
-                for k in self.taskinfo.iterkeys():
-                    self.__dict__[k]=self.taskinfo[k]
-            else:
-                self.stimulusInfo.append(trial)
-        if len(self.stimulusInfo)>0:
-            self.loadedStimulusFile=filename
-    
+
     def getPastAcc(self, time_win):
         """Returns the ratio of hits/trials in a predefined window
         """
         if time_win > self.trialnum:
             time_win = self.trialnum
         return sum(self.track_response[-time_win:])
-        
-        
         
     
     def presentTextTrialWithFB(self,trial):
@@ -229,19 +219,21 @@ class tempStructTest:
                     self.trigger_times.append(response_time-self.startTime)
                     continue
                 elif key in self.action_keys:
-                    alreadyResponded=1
                     trial['response'].append(key)
                     trial['rt'].append(response_time-onsetTime)
                     if self.clearAfterResponse and trial['stimulusCleared']==0:
                         self.clearWindow()
                         trial['stimulusCleared']=core.getTime()-onsetTime
                         core.wait(trial['FBonset'])    
-            if core.getTime() > (onsetTime+self.stimulusDuration) and trial['stimulusCleared']==0:
-                self.clearWindow()
-                trial['stimulusCleared']=core.getTime()-onsetTime
         if trial['stimulusCleared']==0:
             self.clearWindow()
             trial['stimulusCleared']=core.getTime()-onsetTime
+            trial['response'] = 'NA'
+            core.wait(.5)
+            self.textStim.setText('Please Respond Faster')
+            self.win.flip()
+            core.wait(1)
+            self.clearWindow()
         return trial
             
         
