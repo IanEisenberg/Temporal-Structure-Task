@@ -17,22 +17,23 @@ import test_bot
 verbose=True
 fullscr=False  # change to True for full screen display
 subdata=[]
-practice_on = True
+practice_on = False
 
 # set things up for practice, training and tests
-subject_code = '000'
+subject_code = 'newtest'
 block_len = random.choice([12,16,20])
+block_len=4
+num_blocks = 2
 probs = (.9,.1)
-config_file = makeConfigList(iden = subject_code, block_len = block_len, 
-                             probs1 = probs, probs2 = probs)
+config_file = makeConfigList(iden = subject_code, num_blocks = num_blocks,
+                             block_len = block_len, probs1 = probs, probs2 = probs)
 bot = test_bot.test_bot(config_file)
 
 practice_file = '../Config_Files/Temp_Struct_Practice_config.yaml'
 practice=psychTask(practice_file,subject_code, fullscreen = fullscr, bot = None)
 task=psychTask(config_file,subject_code, fullscreen = fullscr, bot = None)
 task.writeToLog(task.toJSON())
-test=tempStructTest(config_file,subject_code,bot = None)
-test.writeToLog(test.toJSON())
+
 
 #************************************
 # Start Practice
@@ -138,7 +139,7 @@ for trial in task.stimulusInfo:
 
 
 task.writeToLog(json.dumps({'trigger_times':task.trigger_times}))
-
+task.writeData()
 task.presentTextToWindow('Thank you. Please wait for the experimenter.')
 task.waitForKeypress(task.quit_key)
 
@@ -149,6 +150,9 @@ task.closeWindow()
 #************************************
 # Start test
 #************************************
+
+test=tempStructTest(config_file,subject_code,bot = None)
+test.writeToLog(test.toJSON())
 
 # prepare to start
 test.setupWindow()

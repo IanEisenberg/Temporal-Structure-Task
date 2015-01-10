@@ -10,7 +10,9 @@ import random as r
 import yaml
 import datetime
 
-def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2), probs2 = (.8, .2), block_len = 30, loc = '../Config_Files/'):
+def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2),
+                    probs2 = (.8, .2), num_blocks = 50, 
+                    block_len = 16, loc = '../Config_Files/'):
     
     timestamp=datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     iden = str(iden)
@@ -34,7 +36,7 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2), pr
       'block_len': block_len
     }
     
-    def makeTrialList(block_len):
+    def makeTrialList():
         """
         Create a list of trials with the correct block length. Define tasksets with
         "probs" = P(reward | correct) and P(reward | incorrect), and "actions" =
@@ -43,7 +45,7 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2), pr
         trialList = []    
         keys = tasksets.keys()
         r.shuffle(keys)
-        num_blocks = 50
+        trial_count = 1
         curr_onset = 1 #initial onset
         #create blocks with a random order of stims (keeping the freqs equal)
         for block in range(num_blocks):
@@ -70,6 +72,7 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2), pr
 
             for trial in range(block_len):
                 trialList += [{
+                    'trial_count': trial_count,
                     'TS': curr_ts,
                     'stim': stims[trial],
                     'correct_action': curr_ts['actions'][stims[trial]],
@@ -78,11 +81,12 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2), pr
                     'PosFB_correct': bool(PosFB_c[trial]),
                     'PosFB_incorrect': bool(PosFB_i[trial])
                 }]
+                trial_count += 1
                 curr_onset += 3+r.random()
                 
         return trialList
     
-    yaml_input = makeTrialList(block_len)
+    yaml_input = makeTrialList()
     yaml_input.insert(0,initial_params)    
     filename = taskname + '_' + iden + '_config_' + timestamp + '.yaml'
     f=open(loc + filename,'w')
