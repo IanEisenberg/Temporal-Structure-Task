@@ -27,7 +27,7 @@ def np_to_list(d):
     return d_fixed
 
 
-class psychTask:
+class tempStructTask:
     """ class defining a psychological experiment
     """
     
@@ -109,7 +109,6 @@ class psychTask:
         self.win.flip()
         self.win.flip()
         
-
     def presentTextToWindow(self,text):
         """ present a text message to the screen
         return:  time of completion
@@ -139,7 +138,6 @@ class psychTask:
             self.win.flip()
         else:
             self.presentTextToWindow('')
-
 
     def waitForKeypress(self,key=[]):
         """ wait for a keypress and return the pressed key
@@ -264,7 +262,6 @@ class psychTask:
             self.clearWindow()
             trial['stimulusCleared']=core.getTime()-onsetTime
             trial['response'] = 'NA'
-            trial['stimulusCleared']=core.getTime()-onsetTime
             core.wait(.5)
             self.textStim.setText('Please Respond Faster')
             self.win.flip()

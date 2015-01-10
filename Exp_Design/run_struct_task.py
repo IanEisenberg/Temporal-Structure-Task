@@ -1,5 +1,5 @@
 """
-runPsychTask
+runtempStructTask
 """
 
 import psychopy
@@ -7,7 +7,7 @@ from psychopy import visual, core, event, logging, data, misc, sound
 import os, socket, random
 import json
 
-from temp_struct_task import psychTask
+from temp_struct_task import tempStructTask
 from temp_struct_test_noFB import tempStructTest
 from make_config import makeConfigList
 import test_bot
@@ -30,8 +30,8 @@ config_file = makeConfigList(iden = subject_code, num_blocks = num_blocks,
 bot = test_bot.test_bot(config_file)
 
 practice_file = '../Config_Files/Temp_Struct_Practice_config.yaml'
-practice=psychTask(practice_file,subject_code, fullscreen = fullscr, bot = None)
-task=psychTask(config_file,subject_code, fullscreen = fullscr, bot = None)
+practice=tempStructTask(practice_file,subject_code, fullscreen = fullscr, bot = None)
+task=tempStructTask(config_file,subject_code, fullscreen = fullscr, bot = None)
 task.writeToLog(task.toJSON())
 
 
