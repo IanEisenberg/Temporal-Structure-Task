@@ -31,7 +31,8 @@ class tempStructTask:
     """ class defining a psychological experiment
     """
     
-    def __init__(self,config_file,subject_code,verbose=True, fullscreen = False, bot = None):
+    def __init__(self,config_file,subject_code,verbose=True, 
+                 fullscreen = False, bot = None, mode = 'FB'):
             
         self.subject_code=subject_code
         self.win=[]
@@ -49,6 +50,8 @@ class tempStructTask:
         self.fullscreen = fullscreen
         self.bot = bot
         self.bot_on = False
+        #Choose 'practice', 'FB', 'noFB'
+        self.mode = mode
         if self.bot:
             self.bot_on = True
         try:
@@ -82,7 +85,7 @@ class tempStructTask:
         all of the same information as taskinfo)
         """
         init_dict = {k:self.__dict__[k] for k in self.__dict__.iterkeys() if k 
-                    not in ('stimulusInfo', 'alldata', 'bot', 'taskinfo')}
+                    not in ('clock', 'stimulusInfo', 'alldata', 'bot', 'taskinfo')}
         return json.dumps(init_dict)
     
     def writeToLog(self,msg,loc = '../Log/'):
@@ -109,27 +112,37 @@ class tempStructTask:
         self.win.flip()
         self.win.flip()
         
-    def presentTextToWindow(self,text):
+    def presentTextToWindow(self,text, color = u'white'):
         """ present a text message to the screen
         return:  time of completion
         """
         
         if not self.textStim:
             self.textStim=visual.TextStim(self.win, text=text,font='BiauKai',
-                                height=1,color=u'white', colorSpace=u'rgb',
+                                height=1,color=color, colorSpace=u'rgb',
                                 opacity=1,depth=0.0,
                                 alignHoriz='center',wrapWidth=50)
             self.textStim.setAutoDraw(True) #automatically draw every frame
         else:
             self.textStim.setText(text)
+            self.textStim.setColor(color)
         self.win.flip()
         return core.getTime()
 
-    def defineStims(self):
-        self.stims = [visual.Circle(self.win, radius = 3, lineColor = 'red', fillColor = 'red'),
-                      visual.Circle(self.win, radius = 3, lineColor = 'blue', fillColor = 'blue')]
-        r.shuffle(self.stims)
+    def defineStims(self, stims = None):
+        if stims:
+            self.stims = stims
+        else:
+            if self.mode == 'FB':
+                self.stims = [visual.ImageStim(self.win, image = '../Stimuli/93.tiff', units = 'cm', size = (5, 5)),
+                            visual.ImageStim(self.win, image = '../Stimuli/22.tiff', units = 'cm', size = (5, 5))]
+                r.shuffle(self.stims)
+            elif self.mode == 'practice':
+                self.stims = [visual.ImageStim(self.win, image = '../Stimuli/12.tiff', units = 'cm', size = (5, 5)),
+                            visual.ImageStim(self.win, image = '../Stimuli/17.tiff', units = 'cm', size = (5, 5))]
+            
 
+        
     def clearWindow(self):
         """ clear the main window
         """
@@ -176,15 +189,6 @@ class tempStructTask:
     def shutDownEarly(self):
         self.closeWindow()
         sys.exit()
-
-    def shutDownAndSave(self):
-        """ shut down cleanly and save data
-        """
-        try:
-            self.writeDataToCouchdb()
-            print 'saved data to couchdb'
-        except:
-            print 'unable to save data to couchbd'
     
     def getPastAcc(self, time_win):
         """Returns the ratio of hits/trials in a predefined window
@@ -193,7 +197,13 @@ class tempStructTask:
             time_win = self.trialnum
         return sum(self.track_response[-time_win:])
         
-    def presentTrialWithFB(self,trial):
+    def getStims(self):
+        return self.stims
+        
+    def getActions(self):
+        return self.action_keys
+        
+    def presentTrial(self,trial):
         """
         This function presents a stimuli, waits for a response, tracks the
         response and RT and presents appropriate feedback. If a bot was loaded
@@ -201,26 +211,25 @@ class tempStructTask:
         'actions' and 'RTs'. This function also controls the timing of FB 
         presentation.
         """
+        trialClock = core.Clock()
         self.trialnum += 1
         self.stims[trial['stim']].draw()
         self.win.flip()
+        trialClock.reset()
         response_acc = 0
-        onsetTime=core.getTime()
         event.clearEvents()
-        FBtext = ['Lose', 'Win']
-        trial['actualOnsetTime']=onsetTime - self.startTime
+        FBtext = [('Lose\n\n -$',u'red'), ('Win\n\n +$',u'lime')]
+        trial['actualOnsetTime']=core.getTime() - self.startTime
         trial['stimulusCleared']=0
         trial['response']=[]
         trial['rt']=[]
         trial['FB'] = []
-        trialDuration=np.max([self.stimulusDuration,self.responseWindow])
-        trial['trial_duration']=trialDuration
-        while core.getTime() < (onsetTime + trialDuration):
+        while trialClock.getTime() < (self.stimulusDuration):
             key_response=event.getKeys(None,True)
             if self.bot and self.bot_on:
                 choice = self.bot.choose(trial['stim'])
                 core.wait(choice[1])
-                key_response = [(choice[0], core.getTime())]
+                key_response = [(choice[0], core.getAbsTime())]
             if len(key_response)==0:
                 continue
             for key,response_time in key_response:
@@ -231,40 +240,41 @@ class tempStructTask:
                     continue
                 elif key in self.action_keys:
                     trial['response'].append(key)
-                    trial['rt'].append(response_time-onsetTime)
+                    trial['rt'].append(trialClock.getTime())
                     if self.clearAfterResponse and trial['stimulusCleared']==0:
                         self.clearWindow()
-                        trial['stimulusCleared']=core.getTime()-onsetTime
+                        #trial['stimulusCleared']=core.getTime()-onsetTime
+                        trial['stimulusCleared']=trialClock.getTime()
                         core.wait(trial['FBonset'])    
-                        trial['actualFBOnsetTime'] = core.getTime()-trial['stimulusCleared']
-                        if key == trial['correct_action']:
-                            response_acc = 1
-                            if trial['PosFB_correct'] == 1:                       
-                                FB = 1
-                            else: 
-                                FB = 0
-                        else:
-                            if trial['PosFB_incorrect'] == 1:                           
-                                FB = 1
-                            else: 
-                                FB = 0
-                        if self.bot:
-                            self.bot.learn(FB)
-                            print(self.bot.Q.Qstates)
-                        trial['FB'] = FB
-                        self.textStim.setText(FBtext[FB])
-                        self.win.flip()
-                        core.wait(self.FBDuration)
-                        self.clearWindow()     
+                        #If training, present FB
+                        if self.mode != "noFB":
+                            trial['actualFBOnsetTime'] = trialClock.getTime()-trial['stimulusCleared']
+                            if key == trial['correct_action']:
+                                response_acc = 1
+                                if trial['PosFB_correct'] == 1:                       
+                                    FB = 1
+                                else: 
+                                    FB = 0
+                            else:
+                                if trial['PosFB_incorrect'] == 1:                           
+                                    FB = 1
+                                else: 
+                                    FB = 0
+                            if self.bot:
+                                self.bot.learn(FB)
+                                print(self.bot.Q.Qstates)
+                            trial['FB'] = FB
+                            self.presentTextToWindow(FBtext[FB][0], FBtext[FB][1])
+                            core.wait(self.FBDuration)
+                            self.clearWindow()     
         #If subject did not respond within the stimulus window clear the stim
         #and admonish the subject
         if trial['stimulusCleared']==0:
             self.clearWindow()
-            trial['stimulusCleared']=core.getTime()-onsetTime
+            trial['stimulusCleared']=trialClock.getTime()
             trial['response'] = 'NA'
             core.wait(.5)
-            self.textStim.setText('Please Respond Faster')
-            self.win.flip()
+            self.presentTextToWindow('Please Respond Faster')
             core.wait(1)
             self.clearWindow()
         self.track_response+=[response_acc]

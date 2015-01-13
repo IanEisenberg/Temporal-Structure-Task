@@ -11,13 +11,14 @@ import yaml
 import datetime
 
 def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2),
-                    probs2 = (.8, .2), num_blocks = 50, 
-                    block_len = 16, loc = '../Config_Files/'):
+                    probs2 = (.8, .2), num_blocks = 50, block_len = 16, 
+                    action_keys = None, loc = '../Config_Files/'):
     
     timestamp=datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     iden = str(iden)
-    action_keys = ['h', 'j', 'k', 'l']
-    r.shuffle(action_keys)
+    if not action_keys:
+        action_keys = ['h', 'j', 'k', 'l']
+        r.shuffle(action_keys)
     stim_ids = [0,1]
     tasksets = {'ts1': {'probs': probs1, 'actions': [action_keys[i] for i in (0,1)]}, 
                           'ts2': {'probs': probs2, 'actions': [action_keys[i] for i in (2,3)]}}
@@ -25,7 +26,7 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2),
       'clearAfterResponse': 1,
       'quit_key': 'q',
       'responseWindow': 1.0,
-      'stimulusDuration': 1.0,
+      'stimulusDuration': 1.0,  
       'FBDuration': 1.0,
       'taskname': taskname,
       'id': iden,
