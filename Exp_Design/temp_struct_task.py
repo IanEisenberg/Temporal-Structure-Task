@@ -60,8 +60,8 @@ class tempStructTask:
             print 'cannot load config file'
             sys.exit()
                                                         
-        self.logfilename='%s_%s_log_%s.log'%(self.taskname,self.subject_code,self.timestamp)
-        self.datafilename='%s_%s_data_%s'%(self.taskname,self.subject_code,self.timestamp)
+        self.logfilename='%s_%s_log_%s.log'%(self.subject_code,self.taskname,self.timestamp)
+        self.datafilename='%s_%s_data_%s'%(self.subject_code,self.taskname,self.timestamp)
 
     def loadStimulusFileYAML(self,filename):
         """ load a stimulus file in YAML format
@@ -211,6 +211,7 @@ class tempStructTask:
         'actions' and 'RTs'. This function also controls the timing of FB 
         presentation.
         """
+        print trial['PosFB_correct']
         trialClock = core.Clock()
         self.trialnum += 1
         self.stims[trial['stim']].draw()

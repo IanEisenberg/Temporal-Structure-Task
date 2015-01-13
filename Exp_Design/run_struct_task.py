@@ -8,22 +8,21 @@ import os, socket, random
 import json
 
 from temp_struct_task import tempStructTask
-from temp_struct_test_noFB import tempStructTest
 from make_config import makeConfigList
 import test_bot
 
 #set-up some variables
 
 verbose=True
-fullscr=False  # change to True for full screen display
+fullscr=True  # change to True for full screen display
 subdata=[]
-practice_on = False
+practice_on = True
 
 # set things up for practice, training and tests
-subject_code = 'newtest'
+subject_code = 'Pilot000'
 block_len = random.choice([12,16,20])
-block_len=4
-num_blocks = 2
+block_len = 16
+num_blocks = 40
 probs = (.9,.1)
 config_file = makeConfigList(iden = subject_code, num_blocks = num_blocks,
                              block_len = block_len, probs1 = probs, probs2 = probs)
@@ -44,7 +43,7 @@ if practice_on:
     practice.setupWindow()
     practice.defineStims()
     task_intro_text = [
-        'Welcome\nPress 5 to move through instructions',
+        'Welcome\n\nPress 5 to move through instructions',
         """
         In this experiment, shapes will appear on the screen
         and you will need to learn how to respond to them.
@@ -96,7 +95,7 @@ if practice_on:
                 for key,response_time in key_response:
                     if practice.quit_key==key:
                         practice.shutDownEarly()
-        trial=practice.presentTrialWithFB(trial)
+        trial=practice.presentTrial(trial)
     
     # clean up
     practice.shutDownAndSave()
@@ -129,13 +128,13 @@ for trial in task.stimulusInfo:
                     task.bot_on = not task.bot_on
                     continue
 
-    trial=task.presentTrialWithFB(trial)
+    trial=task.presentTrial(trial)
     task.writeToLog(json.dumps(trial))
     task.alldata.append(trial)
     #End the task if performance reaches some criterion
-    if task.getPastAcc(2*block_len) >= 2*block_len*.9:
-        print(task.getPastAcc(2*block_len))
-        break
+#    if task.getPastAcc(2*block_len) >= 2*block_len*.9:
+#        print(task.getPastAcc(2*block_len))
+#        break
 
 
 task.writeToLog(json.dumps({'trigger_times':task.trigger_times}))
@@ -144,20 +143,23 @@ task.presentTextToWindow('Thank you. Please wait for the experimenter.')
 task.waitForKeypress(task.quit_key)
 
 # clean up
-task.shutDownAndSave()
 task.closeWindow()
 
 #************************************
 # Start test
 #************************************
 
-test=tempStructTest(config_file,subject_code,bot = None)
+test_num_blocks = 20
+test_config = makeConfigList(taskname = 'Temp_Struct_noFBTest', iden = subject_code, 
+                             num_blocks = test_num_blocks, block_len = block_len, probs1 = probs,
+                              probs2 = probs, action_keys = task.getActions())
+test=tempStructTask(test_config,subject_code,bot = None, mode = 'noFB')
 test.writeToLog(test.toJSON())
 
 # prepare to start
 test.setupWindow()
-test.defineStims()
-test.presentTextToWindow('Waiting for key to begin (or press 5)\nPress q to quit')
+test.defineStims(task.getStims())
+test.presentTextToWindow('Please wait for the experimenter')
 resp,test.startTime=test.waitForKeypress(test.trigger_key)
 test.checkRespForQuitKey(resp)
 event.clearEvents()
@@ -175,8 +177,14 @@ for trial in test.stimulusInfo:
                     test.trigger_times.append(response_time-test.startTime)
                     continue
 
-    trial=test.presentTextTrialWithFB(trial)
+    trial=test.presentTrial(trial)
     test.writeToLog(json.dumps(trial))
     test.alldata.append(trial)
 
+test.writeToLog(json.dumps({'trigger_times':task.trigger_times}))
+test.writeData()
+test.presentTextToWindow('Thank you. Please wait for the experimenter.')
+test.waitForKeypress(task.quit_key)
 
+# clean up
+test.closeWindow()
