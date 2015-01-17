@@ -273,7 +273,8 @@ class tempStructTask:
         if trial['stimulusCleared']==0:
             self.clearWindow()
             trial['stimulusCleared']=trialClock.getTime()
-            trial['response'] = 'NA'
+            trial['response'].append('NA')
+            trial['rt'].append(999)
             core.wait(.5)
             self.presentTextToWindow('Please Respond Faster')
             core.wait(1)

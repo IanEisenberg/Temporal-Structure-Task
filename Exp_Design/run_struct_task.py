@@ -16,7 +16,7 @@ import test_bot
 verbose=True
 fullscr=True  # change to True for full screen display
 subdata=[]
-practice_on = True
+practice_on = False
 
 # set things up for practice, training and tests
 subject_code = 'Pilot000'
@@ -29,7 +29,7 @@ config_file = makeConfigList(iden = subject_code, num_blocks = num_blocks,
 bot = test_bot.test_bot(config_file)
 
 practice_file = '../Config_Files/Temp_Struct_Practice_config.yaml'
-practice=tempStructTask(practice_file,subject_code, fullscreen = fullscr, bot = None)
+practice=tempStructTask(practice_file,subject_code, fullscreen = fullscr, bot = None, mode = 'Practice')
 task=tempStructTask(config_file,subject_code, fullscreen = fullscr, bot = None)
 task.writeToLog(task.toJSON())
 
@@ -57,7 +57,7 @@ if practice_on:
         as possible.
         """,
         """
-        After you press a key, the shape will dissapear
+        After you press a key, the shape will disapear
         and you will receive feedback about whether
         you won or lost.
         
@@ -98,7 +98,6 @@ if practice_on:
         trial=practice.presentTrial(trial)
     
     # clean up
-    practice.shutDownAndSave()
     practice.closeWindow()
 
 #************************************

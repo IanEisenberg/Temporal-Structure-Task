@@ -38,9 +38,6 @@ def makeConfigList(taskname = 'Temp_Struct', loc = '../Config_Files/'):
         correct action for stim 1 and stim 2.
         """
         trialList = []    
-        keys = tasksets.keys()
-        r.shuffle(keys)
-        num_blocks = 50
         curr_onset = 1 #initial onset
         #Create practice stim order
         r.seed(11111)
