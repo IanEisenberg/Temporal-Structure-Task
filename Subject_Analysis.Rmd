@@ -15,8 +15,11 @@ Load up the data
 
 ```{r helper functions}
   lagpad <- function(x, k) {
-    c(rep(NA, k), x)[1 : length(x)] 
-}
+    if(k > 0) {
+      c(rep(NA, k), x)[1 : length(x)] 
+    } else {
+      c(x, rep(NA, abs(k)))[abs(k)+1 : length(x)-k-1]
+    }}
 ```
 
 ```{r}
