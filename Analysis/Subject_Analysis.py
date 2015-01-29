@@ -19,8 +19,8 @@ import matplotlib.pyplot as plt
 from Load_Data import load_data
 from ggplot import *
 
-name = 'Pilot000_Temp_Struct_data_2015-01-13_14-57-54'
-data_file = 'Data/' + name + '.yaml'
+name = 'Pilot001_Ian_Temp_Struct_2015-01-29_11-29-04'
+data_file = '../Data/' + name + '.yaml'
 taskinfo, df, dfa = load_data(data_file, name)
 
 #*********************************************
@@ -44,7 +44,8 @@ plt.rc('figure', figsize = (6,6))
 def window_function(func, array, window):
     slices = len(array)/window
     windowed_scores = [float(func(array[i*window:(i+1)*window])) for i in range(slices)]
-    windowed_scores.append(float(func(array[(slices)*window:])))
+    if slices*window < len(array):
+        windowed_scores.append(float(func(array[(slices)*window:])))
     return np.array(windowed_scores)
 
 def bar(x, y, title):
@@ -73,7 +74,7 @@ plt.ylabel('RT in ms')
 # We calculate the proportion of time the subject maintains the same taskset after
 # a win or a loss. 
 
-window = 32
+window = 30
 win_stay = [dfa.switch[i] == False and dfa.FB.shift(1)[i] == 1 for i in dfa.index]
 lose_stay = [dfa.switch[i] == False and dfa.FB.shift(1)[i] == 0 for i in dfa.index]
 
@@ -101,45 +102,60 @@ plt.xlabel('Trial #')
 plt.ylabel('Probability of continuing taskset')
 plt.legend(['P(Stay|Win)', 'P(Stay|Lose)', 'P(Stay)'], loc = 'best')
 
-# Probability of X based on position in block
-# P(switch|lose) for each position in the block
-start = 0
+# Probability of X based on position in inferred block
+# P(switch|lose) for each position in the inferred block
+block = 15
+start = len(dfa.index)/2
 end = len(dfa.index)
 lswitch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
-                        if dfa.FB.shift(1)[i]==0 and (i-1)%block_len == j]) 
-                        for j in range(block_len)])
+                        if dfa.FB.shift(1)[i]==0 and (i-1)%block == j]) 
+                        for j in range(block)])
 # P(switch|win) for each position in the block                           
 wswitch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
-                        if dfa.FB.shift(1)[i]==1 and (i-1)%block_len == j]) 
-                        for j in range(block_len)])
+                        if dfa.FB.shift(1)[i]==1 and (i-1)%block == j]) 
+                        for j in range(block)])
 # P(switch for each position in the block                                                 
 switch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
-                        if (i-1)%block_len == j]) for j in range(block_len)])
+                        if (i-1)%block == j]) for j in range(block)])
 # P(lose) for each position in block
 FB_position = np.array([np.mean([dfa.FB[i] for i in dfa.index[start:end] 
-                        if (i-1)%block_len == j]) for j in range(block_len)])
+                        if (i-1)%block == j]) for j in range(block)])
 
 # RT for each position in block
 RT_position = np.array([np.mean([dfa.rt[i] for i in dfa.index[start:end] 
-                        if (i-1)%block_len == j]) for j in range(block_len)])
+                        if (i-1)%block == j]) for j in range(block)])
                             
 
     
 plt.figure(figsize = (8,8))
 plt.subplot(221)
-bar(range(16),FB_position,'Average FB')
+bar(range(block),FB_position,'Average FB')
 plt.subplot(222)
-bar(range(16),switch_position,'P(switch)')
+bar(range(block),switch_position,'P(switch)')
 plt.subplot(223)
-bar(range(16),lswitch_position,'P(switch | lose)')
+bar(range(block),lswitch_position,'P(switch | lose)')
 plt.subplot(224)
-bar(range(16),wswitch_position,'P(switch | win)')
+bar(range(block),wswitch_position,'P(switch | win)')
 plt.tight_layout()
 
 
+#Average distance between switches
+a=[i  for i in dfa.index if dfa.switch[i] == True]
+avg_distance = [(x,x - a[i-1]) for i,x in enumerate(a)][1:]
+error_index = [i for i in dfa.index if dfa.FB[i] == 0]
+
+plt.figure(figsize=(8,8))
+plt.plot([x[0] for x in avg_distance], [x[1] for x in avg_distance],error_index, [1]*len(error_index),'|')
+plt.axhline(15, color = 'red', linestyle = '--')
+plt.title('Time between switches')
+plt.xlabel('trial numer')
+plt.ylabel('Trials since last switch')
+plt.legend(['Switch Distance','Lose','Block Length'], loc = 'best')
+
+
 # ggplot test
-ggplot(dfa.reset_index(), aes(x = 'trial_count', y = 'rt', color = 'response')) + geom_point() \
-     + stat_smooth(method = 'lm') + facet_wrap('response')
+ggplot(dfa.reset_index(), aes(x = 'trial_count', y = 'rt')) + geom_point() \
+     + stat_smooth(method = 'lm') + facet_wrap('switch')
 
 
 

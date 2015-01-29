@@ -17,13 +17,13 @@ verbose=True
 fullscr=True  # change to True for full screen display
 subdata=[]
 practice_on = False
+test_on = False
 
 # set things up for practice, training and tests
-subject_code = 'Pilot000'
-block_len = random.choice([12,16,20])
-block_len = 16
+subject_code = 'Pilot001_Ian'
+block_len = random.choice(range(10,20))
 num_blocks = 40
-probs = (.9,.1)
+probs = (.8,.2)
 config_file = makeConfigList(iden = subject_code, num_blocks = num_blocks,
                              block_len = block_len, probs1 = probs, probs2 = probs)
 bot = test_bot.test_bot(config_file)
@@ -58,10 +58,11 @@ if practice_on:
         """,
         """
         After you press a key, the shape will disapear
-        and you will receive feedback about whether
-        you won or lost.
+        and you will either gain or lose points.
         
-        Your goal is to win as much as possible.
+        Your goal is to get as many points as possible.
+        Part of your payment will be determined by
+        how many points you get.
         """,
         """
         No key will win or lose all of the time.
@@ -148,42 +149,44 @@ task.closeWindow()
 # Start test
 #************************************
 
-test_num_blocks = 20
-test_config = makeConfigList(taskname = 'Temp_Struct_noFBTest', iden = subject_code, 
-                             num_blocks = test_num_blocks, block_len = block_len, probs1 = probs,
-                              probs2 = probs, action_keys = task.getActions())
-test=tempStructTask(test_config,subject_code,bot = None, mode = 'noFB')
-test.writeToLog(test.toJSON())
-
-# prepare to start
-test.setupWindow()
-test.defineStims(task.getStims())
-test.presentTextToWindow('Please wait for the experimenter')
-resp,test.startTime=test.waitForKeypress(test.trigger_key)
-test.checkRespForQuitKey(resp)
-event.clearEvents()
-
-for trial in test.stimulusInfo:
-    # wait for onset time
-    while core.getTime() < trial['onset'] + test.startTime:
-            key_response=event.getKeys(None,True)
-            if len(key_response)==0:
-                continue
-            for key,response_time in key_response:
-                if test.quit_key==key:
-                    test.shutDownEarly()
-                elif test.trigger_key==key:
-                    test.trigger_times.append(response_time-test.startTime)
+if test_on:
+    
+    test_num_blocks = 20
+    test_config = makeConfigList(taskname = 'Temp_Struct_noFBTest', iden = subject_code, 
+                                 num_blocks = test_num_blocks, block_len = block_len, probs1 = probs,
+                                  probs2 = probs, action_keys = task.getActions())
+    test=tempStructTask(test_config,subject_code,bot = None, mode = 'noFB')
+    test.writeToLog(test.toJSON())
+    
+    # prepare to start
+    test.setupWindow()
+    test.defineStims(task.getStims())
+    test.presentTextToWindow('Please wait for the experimenter')
+    resp,test.startTime=test.waitForKeypress(test.trigger_key)
+    test.checkRespForQuitKey(resp)
+    event.clearEvents()
+    
+    for trial in test.stimulusInfo:
+        # wait for onset time
+        while core.getTime() < trial['onset'] + test.startTime:
+                key_response=event.getKeys(None,True)
+                if len(key_response)==0:
                     continue
-
-    trial=test.presentTrial(trial)
-    test.writeToLog(json.dumps(trial))
-    test.alldata.append(trial)
-
-test.writeToLog(json.dumps({'trigger_times':task.trigger_times}))
-test.writeData()
-test.presentTextToWindow('Thank you. Please wait for the experimenter.')
-test.waitForKeypress(task.quit_key)
-
-# clean up
-test.closeWindow()
+                for key,response_time in key_response:
+                    if test.quit_key==key:
+                        test.shutDownEarly()
+                    elif test.trigger_key==key:
+                        test.trigger_times.append(response_time-test.startTime)
+                        continue
+    
+        trial=test.presentTrial(trial)
+        test.writeToLog(json.dumps(trial))
+        test.alldata.append(trial)
+    
+    test.writeToLog(json.dumps({'trigger_times':task.trigger_times}))
+    test.writeData()
+    test.presentTextToWindow('Thank you. Please wait for the experimenter.')
+    test.waitForKeypress(task.quit_key)
+    
+    # clean up
+    test.closeWindow()

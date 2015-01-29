@@ -48,6 +48,7 @@ class tempStructTask:
         self.trialnum = 0
         self.track_response = []
         self.fullscreen = fullscreen
+        self.pointtracker = 0
         self.bot = bot
         self.bot_on = False
         #Choose 'practice', 'FB', 'noFB'
@@ -60,8 +61,8 @@ class tempStructTask:
             print 'cannot load config file'
             sys.exit()
                                                         
-        self.logfilename='%s_%s_log_%s.log'%(self.subject_code,self.taskname,self.timestamp)
-        self.datafilename='%s_%s_data_%s'%(self.subject_code,self.taskname,self.timestamp)
+        self.logfilename='%s_%s_%s.log'%(self.subject_code,self.taskname,self.timestamp)
+        self.datafilename='%s_%s_%s'%(self.subject_code,self.taskname,self.timestamp)
 
     def loadStimulusFileYAML(self,filename):
         """ load a stimulus file in YAML format
@@ -203,6 +204,9 @@ class tempStructTask:
     def getActions(self):
         return self.action_keys
         
+    def getPoints(self):
+        return (self.pointtracker,self.trialnum)
+        
     def presentTrial(self,trial):
         """
         This function presents a stimuli, waits for a response, tracks the
@@ -219,7 +223,7 @@ class tempStructTask:
         trialClock.reset()
         response_acc = 0
         event.clearEvents()
-        FBtext = [('Lose\n\n -$',u'red'), ('Win\n\n +$',u'lime')]
+        FBtext = [('Lose\n\n -1',u'red'), ('Win\n\n +1!',u'lime')]
         trial['actualOnsetTime']=core.getTime() - self.startTime
         trial['stimulusCleared']=0
         trial['response']=[]
@@ -251,6 +255,7 @@ class tempStructTask:
                         if self.mode != "noFB":
                             trial['actualFBOnsetTime'] = trialClock.getTime()-trial['stimulusCleared']
                             if key == trial['correct_action']:
+                                self.pointtracker += 1
                                 response_acc = 1
                                 if trial['PosFB_correct'] == 1:                       
                                     FB = 1

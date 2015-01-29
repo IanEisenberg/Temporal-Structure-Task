@@ -1,5 +1,5 @@
 trial_count,FB,TS,correct_action,response,rt,stim,correct,con_ts,con_stim,curr_ts,switch
-1,0,"{'probs': (0.9, 0.1), 'actions': ['l', 'k']}",k,h,0.4049379825592041,1,False,False,False,0,True
+1,0,"{'probs': (0.9, 0.1), 'actions': ['l', 'k']}",k,h,0.4049379825592041,1,False,False,False,0,False
 2,0,"{'probs': (0.9, 0.1), 'actions': ['l', 'k']}",l,j,0.45731115341186523,0,False,False,False,0,False
 3,1,"{'probs': (0.9, 0.1), 'actions': ['l', 'k']}",k,k,0.4011859893798828,1,True,True,True,1,True
 4,1,"{'probs': (0.9, 0.1), 'actions': ['l', 'k']}",k,k,0.48794102668762207,1,True,True,True,1,False

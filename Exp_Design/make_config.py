@@ -83,7 +83,7 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2),
                     'PosFB_incorrect': bool(PosFB_i[trial])
                 }]
                 trial_count += 1
-                curr_onset += 2.5+r.random()
+                curr_onset += 2.5+r.random()*.5
                 
         return trialList
     
