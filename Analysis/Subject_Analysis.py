@@ -104,39 +104,45 @@ plt.legend(['P(Stay|Win)', 'P(Stay|Lose)', 'P(Stay)'], loc = 'best')
 
 # Probability of X based on position in inferred block
 # P(switch|lose) for each position in the inferred block
-block = 15
-start = len(dfa.index)/2
-end = len(dfa.index)
-lswitch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
-                        if dfa.FB.shift(1)[i]==0 and (i-1)%block == j]) 
-                        for j in range(block)])
-# P(switch|win) for each position in the block                           
-wswitch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
-                        if dfa.FB.shift(1)[i]==1 and (i-1)%block == j]) 
-                        for j in range(block)])
-# P(switch for each position in the block                                                 
-switch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
-                        if (i-1)%block == j]) for j in range(block)])
-# P(lose) for each position in block
-FB_position = np.array([np.mean([dfa.FB[i] for i in dfa.index[start:end] 
-                        if (i-1)%block == j]) for j in range(block)])
 
-# RT for each position in block
-RT_position = np.array([np.mean([dfa.rt[i] for i in dfa.index[start:end] 
-                        if (i-1)%block == j]) for j in range(block)])
-                            
+starts = [0, len(dfa.index)/2, 0]
+ends = [len(dfa.index)/2, len(dfa.index), len(dfa.index)]
 
+for start, end in zip(starts,ends):
+    block = 15
     
-plt.figure(figsize = (8,8))
-plt.subplot(221)
-bar(range(block),FB_position,'Average FB')
-plt.subplot(222)
-bar(range(block),switch_position,'P(switch)')
-plt.subplot(223)
-bar(range(block),lswitch_position,'P(switch | lose)')
-plt.subplot(224)
-bar(range(block),wswitch_position,'P(switch | win)')
-plt.tight_layout()
+    lswitch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
+                            if dfa.FB.shift(1)[i]==0 and (i-1)%block == j]) 
+                            for j in range(block)])
+    # P(switch|win) for each position in the block                           
+    wswitch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
+                            if dfa.FB.shift(1)[i]==1 and (i-1)%block == j]) 
+                            for j in range(block)])
+    # P(switch for each position in the block                                                 
+    switch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
+                            if (i-1)%block == j]) for j in range(block)])
+    # P(lose) for each position in block
+    FB_position = np.array([np.mean([dfa.FB[i] for i in dfa.index[start:end] 
+                            if (i-1)%block == j]) for j in range(block)])
+    
+    # RT for each position in block
+    RT_position = np.array([np.mean([dfa.rt[i] for i in dfa.index[start:end] 
+                            if (i-1)%block == j]) for j in range(block)])
+                                
+    
+    plt.figure(figsize = (8,8))
+    plt.suptitle('Stats in trial range: (' + str(start) + ' - ' + str(end) +')', fontsize = 28, y = 1.05)
+    plt.subplot(221)
+    bar(range(block),FB_position,'Average FB')
+    plt.subplot(222)
+    bar(range(block),switch_position,'P(switch)')
+    plt.subplot(223)
+    bar(range(block),lswitch_position,'P(switch | lose)')
+    plt.xlabel('trial number mod ' + str(block))
+    plt.subplot(224)
+    bar(range(block),wswitch_position,'P(switch | win)')
+    plt.xlabel('trial number mod ' + str(block))
+    plt.tight_layout()
 
 
 #Average distance between switches
@@ -150,12 +156,12 @@ plt.axhline(15, color = 'red', linestyle = '--')
 plt.title('Time between switches')
 plt.xlabel('trial numer')
 plt.ylabel('Trials since last switch')
-plt.legend(['Switch Distance','Lose','Block Length'], loc = 'best')
+plt.legend(['Switch Distance','Lose Event','Block Length'], loc = 'best')
 
 
 # ggplot test
-ggplot(dfa.reset_index(), aes(x = 'trial_count', y = 'rt')) + geom_point() \
-     + stat_smooth(method = 'lm') + facet_wrap('switch')
+#ggplot(dfa.reset_index(), aes(x = 'trial_count', y = 'rt')) + geom_point() \
+#     + stat_smooth(method = 'lm') + facet_wrap('switch')
 
 
 
