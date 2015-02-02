@@ -58,7 +58,7 @@ def load_data(datafile, name):
     # 0 indicates the first presented TS is operating, 1 the second
     dfa['curr_ts'] = [int(dfa.response[i] in dfa.TS[1]['actions']) for i in dfa.index]
     dfa['switch'] = [dfa.curr_ts.shift(1)[i] != dfa.curr_ts[i] for i in dfa.index]
-    dfa['switch'][1] = False   
+    dfa.switch[1] = False   
     
     #save data to CSV
     dfa.to_csv('../Data/' + name + '_cleaned.csv')
