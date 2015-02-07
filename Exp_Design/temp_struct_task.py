@@ -50,11 +50,8 @@ class tempStructTask:
         self.fullscreen = fullscreen
         self.pointtracker = 0
         self.bot = bot
-        self.bot_on = False
         #Choose 'practice', 'FB', 'noFB'
         self.mode = mode
-        if self.bot:
-            self.bot_on = True
         try:
             self.loadStimulusFileYAML(config_file)
         except:
@@ -215,13 +212,11 @@ class tempStructTask:
         'actions' and 'RTs'. This function also controls the timing of FB 
         presentation.
         """
-        print trial['PosFB_correct']
         trialClock = core.Clock()
         self.trialnum += 1
         self.stims[trial['stim']].draw()
         self.win.flip()
         trialClock.reset()
-        response_acc = 0
         event.clearEvents()
         FBtext = [('Lose\n\n -1',u'red'), ('Win\n\n +1!',u'lime')]
         trial['actualOnsetTime']=core.getTime() - self.startTime
@@ -231,7 +226,7 @@ class tempStructTask:
         trial['FB'] = []
         while trialClock.getTime() < (self.stimulusDuration):
             key_response=event.getKeys(None,True)
-            if self.bot and self.bot_on:
+            if self.bot:
                 choice = self.bot.choose(trial['stim'])
                 core.wait(choice[1])
                 key_response = [(choice[0], core.getAbsTime())]
@@ -256,7 +251,6 @@ class tempStructTask:
                             trial['actualFBOnsetTime'] = trialClock.getTime()-trial['stimulusCleared']
                             if key == trial['correct_action']:
                                 self.pointtracker += 1
-                                response_acc = 1
                                 if trial['PosFB_correct'] == 1:                       
                                     FB = 1
                                 else: 
@@ -284,7 +278,6 @@ class tempStructTask:
             self.presentTextToWindow('Please Respond Faster')
             core.wait(1)
             self.clearWindow()
-        self.track_response+=[response_acc]
         return trial
             
         

@@ -65,6 +65,11 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2),
             probs_i = curr_ts['probs'][1]
             counts = [1000,1000]
             ideal_counts = np.round(np.array(curr_ts['probs'])*block_len)
+            #To keep the probabilities of rewarding stims locally consistent, we ensure
+            #that invalid stims only appear the expected number of times +-1
+            #I.E. if probabilities of reward are 60% for the target and 40% for the 
+            #other actions, in a block of 20 there will be 12+-1 rewards for the correct action
+            #and 8+-1 for the other actions.
             while (abs(counts-ideal_counts) >= [2,2]).any():
                 PosFB_c = np.random.binomial(1,probs_c,block_len)
                 PosFB_i = np.random.binomial(1,probs_i,block_len)

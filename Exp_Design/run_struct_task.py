@@ -20,10 +20,13 @@ practice_on = False
 test_on = False
 
 # set things up for practice, training and tests
-subject_code = 'Pilot001_Ian'
+subject_code = 'temp'
 block_len = random.choice(range(10,20))
-num_blocks = 40
-probs = (.8,.2)
+train_length = 45*60 #train_length in seconds
+avg_trial_length = 2.75
+#Find the minimum even number of blocks to last at least 60 minutes
+num_blocks = int(round(train_length/(block_len*avg_trial_length)/2)*2)
+probs = (.9,.1)
 config_file = makeConfigList(iden = subject_code, num_blocks = num_blocks,
                              block_len = block_len, probs1 = probs, probs2 = probs)
 bot = test_bot.test_bot(config_file)
@@ -72,10 +75,6 @@ if practice_on:
         job is to learn which they are.
         """,
         """
-        Because each key can win and lose for each shape, 
-        be sure to explore all the keys. Your first 
-        instinct may not be correct.
-        
         We will start with a brief training session. 
         Please wait for the experimenter.
         """
@@ -113,9 +112,18 @@ resp,task.startTime=task.waitForKeypress(practice.trigger_key)
 task.checkRespForQuitKey(resp)
 event.clearEvents()
 
+pause_trial = task.stimulusInfo[len(task.stimulusInfo)/2]
+pause_time = 0
 for trial in task.stimulusInfo:
+    if trial == pause_trial:
+        time1 = core.getTime()
+        task.presentTextToWindow("Take a break! Press '5' when you're ready to continue.")
+        task.waitForKeypress(task.trigger_key)
+        task.clearWindow()
+        pause_time = core.getTime() - time1
+        
     # wait for onset time
-    while core.getTime() < trial['onset'] + task.startTime:
+    while core.getTime() < trial['onset'] + task.startTime + pause_time:
             key_response=event.getKeys(None,True)
             if len(key_response)==0:
                 continue
@@ -123,18 +131,13 @@ for trial in task.stimulusInfo:
                 if task.quit_key==key:
                     task.shutDownEarly()
                 elif task.trigger_key==key:
-                    #Use trigger key to turn the bot on and off
                     task.trigger_times.append(response_time-task.startTime)
-                    task.bot_on = not task.bot_on
+                    task.waitForKeypress()
                     continue
 
     trial=task.presentTrial(trial)
     task.writeToLog(json.dumps(trial))
     task.alldata.append(trial)
-    #End the task if performance reaches some criterion
-#    if task.getPastAcc(2*block_len) >= 2*block_len*.9:
-#        print(task.getPastAcc(2*block_len))
-#        break
 
 
 task.writeToLog(json.dumps({'trigger_times':task.trigger_times}))
@@ -151,7 +154,7 @@ task.closeWindow()
 
 if test_on:
     
-    test_num_blocks = 20
+    test_num_blocks = 4
     test_config = makeConfigList(taskname = 'Temp_Struct_noFBTest', iden = subject_code, 
                                  num_blocks = test_num_blocks, block_len = block_len, probs1 = probs,
                                   probs2 = probs, action_keys = task.getActions())
@@ -190,3 +193,17 @@ if test_on:
     
     # clean up
     test.closeWindow()
+    
+
+#************************************
+# Determine payment
+#************************************
+points,trials = task.getPoints()
+performance = float(points)/(trials*probs[0])
+pay_bonus = round(performance*4*2)/2.0
+print('Participant won ' + str(round(performance,2)) + ' points. Bonus: $' + str(pay_bonus))
+
+
+
+
+

@@ -5,12 +5,6 @@ Created on Fri Jan 23 11:12:43 2015
 @author: Ian
 """
 
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Dec  9 14:22:54 2014
-
-@author: admin
-"""
 
 import yaml
 import numpy as np
