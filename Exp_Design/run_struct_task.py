@@ -6,6 +6,7 @@ import psychopy
 from psychopy import visual, core, event, logging, data, misc, sound
 import os, socket, random
 import json
+import webbrowser
 
 from temp_struct_task import tempStructTask
 from make_config import makeConfigList
@@ -14,18 +15,29 @@ import test_bot
 #set-up some variables
 
 verbose=True
-fullscr=True  # change to True for full screen display
+fullscr=False  # change to True for full screen display
 subdata=[]
-practice_on = False
-test_on = False
+practice_on = True
+test_on = True
 
 # set things up for practice, training and tests
-subject_code = 'temp'
-block_len = random.choice(range(10,20))
-train_length = 45*60 #train_length in seconds
+try:
+    f = open('IDs.txt','r')
+    lines = f.readlines()
+    f.close()
+    last_id = lines[-1][:-1]
+    subject_code = raw_input('Last subject: "%s". Input new subject code: ' % last_id);
+except IOError:
+    subject_code = raw_input('Input first subject code: ');
+f = open('IDs.txt', 'a')
+f.write(subject_code + '\n')
+f.close()
+
+block_len = 12
+train_length = 10 #train_length in minutes
 avg_trial_length = 2.75
 #Find the minimum even number of blocks to last at least 60 minutes
-num_blocks = int(round(train_length/(block_len*avg_trial_length)/2)*2)
+num_blocks = int(round(train_length*60/(block_len*avg_trial_length)/2)*2)
 probs = (.9,.1)
 config_file = makeConfigList(iden = subject_code, num_blocks = num_blocks,
                              block_len = block_len, probs1 = probs, probs2 = probs)
@@ -35,7 +47,6 @@ practice_file = '../Config_Files/Temp_Struct_Practice_config.yaml'
 practice=tempStructTask(practice_file,subject_code, fullscreen = fullscr, bot = None, mode = 'Practice')
 task=tempStructTask(config_file,subject_code, fullscreen = fullscr, bot = None)
 task.writeToLog(task.toJSON())
-
 
 #************************************
 # Start Practice
@@ -60,12 +71,12 @@ if practice_on:
         as possible.
         """,
         """
-        After you press a key, the shape will disapear
+        After you press a key, the shape will disappear
         and you will either gain or lose points.
         
         Your goal is to get as many points as possible.
         Part of your payment will be determined by
-        how many points you get.
+        how many points you earn.
         """,
         """
         No key will win or lose all of the time.
@@ -107,10 +118,16 @@ if practice_on:
 # prepare to start
 task.setupWindow()
 task.defineStims()
-task.presentTextToWindow('Please wait for the experimenter')
+task.presentTextToWindow("""
+                        We will now start the experiment.
+                        There will be one break half way through. 
+                        
+                        Please wait for the experimenter.
+                        """)
 resp,task.startTime=task.waitForKeypress(practice.trigger_key)
 task.checkRespForQuitKey(resp)
 event.clearEvents()
+
 
 pause_trial = task.stimulusInfo[len(task.stimulusInfo)/2]
 pause_time = 0
@@ -202,6 +219,8 @@ points,trials = task.getPoints()
 performance = float(points)/(trials*probs[0])
 pay_bonus = round(performance*4*2)/2.0
 print('Participant won ' + str(round(performance,2)) + ' points. Bonus: $' + str(pay_bonus))
+webbrowser.open_new('https://stanforduniversity.qualtrics.com/SE/?SID=SV_aV1hwNrNXgX5NYN')
+
 
 
 

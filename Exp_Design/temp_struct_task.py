@@ -105,7 +105,8 @@ class tempStructTask:
     def setupWindow(self):
         """ set up the main window
         """
-        self.win = visual.Window(self.window_dims,allowGUI=True, fullscr=self.fullscreen, monitor='testMonitor', units='deg')
+        self.win = visual.Window(self.window_dims, allowGUI=False, fullscr=self.fullscreen, 
+                                 monitor='testMonitor', units='deg')                        
         self.win.setColor('black')
         self.win.flip()
         self.win.flip()
