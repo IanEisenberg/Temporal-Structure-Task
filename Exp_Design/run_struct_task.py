@@ -17,6 +17,7 @@ verbose=True
 fullscr=True  # change to True for full screen display
 subdata=[]
 practice_on = True
+task_on = True
 test_on = True
 
 # set things up for practice, training and tests
@@ -117,56 +118,57 @@ if practice_on:
 # Start training
 #************************************
 
-# prepare to start
-task.setupWindow()
-task.defineStims()
-task.presentTextToWindow("""
-                        We will now start the experiment.
-                        
-                        There will be one break half way through. 
-                        
-                        Please wait for the experimenter.
-                        """)
-resp,task.startTime=task.waitForKeypress(practice.trigger_key)
-task.checkRespForQuitKey(resp)
-event.clearEvents()
-
-
-pause_trial = task.stimulusInfo[len(task.stimulusInfo)/2]
-pause_time = 0
-for trial in task.stimulusInfo:
-    if trial == pause_trial:
-        time1 = core.getTime()
-        task.presentTextToWindow("Take a break! Press '5' when you're ready to continue.")
-        task.waitForKeypress(task.trigger_key)
-        task.clearWindow()
-        pause_time = core.getTime() - time1
-        
-    # wait for onset time
-    while core.getTime() < trial['onset'] + task.startTime + pause_time:
-            key_response=event.getKeys(None,True)
-            if len(key_response)==0:
-                continue
-            for key,response_time in key_response:
-                if task.quit_key==key:
-                    task.shutDownEarly()
-                elif task.trigger_key==key:
-                    task.trigger_times.append(response_time-task.startTime)
-                    task.waitForKeypress()
+if task_on:
+    # prepare to start
+    task.setupWindow()
+    task.defineStims()
+    task.presentTextToWindow("""
+                            We will now start the experiment.
+                            
+                            There will be one break half way through. 
+                            
+                            Please wait for the experimenter.
+                            """)
+    resp,task.startTime=task.waitForKeypress(practice.trigger_key)
+    task.checkRespForQuitKey(resp)
+    event.clearEvents()
+    
+    
+    pause_trial = task.stimulusInfo[len(task.stimulusInfo)/2]
+    pause_time = 0
+    for trial in task.stimulusInfo:
+        if trial == pause_trial:
+            time1 = core.getTime()
+            task.presentTextToWindow("Take a break! Press '5' when you're ready to continue.")
+            task.waitForKeypress(task.trigger_key)
+            task.clearWindow()
+            pause_time = core.getTime() - time1
+            
+        # wait for onset time
+        while core.getTime() < trial['onset'] + task.startTime + pause_time:
+                key_response=event.getKeys(None,True)
+                if len(key_response)==0:
                     continue
-
-    trial=task.presentTrial(trial)
-    task.writeToLog(json.dumps(trial))
-    task.alldata.append(trial)
-
-
-task.writeToLog(json.dumps({'trigger_times':task.trigger_times}))
-task.writeData()
-task.presentTextToWindow('Thank you. Please wait for the experimenter.')
-task.waitForKeypress(task.quit_key)
-
-# clean up
-task.closeWindow()
+                for key,response_time in key_response:
+                    if task.quit_key==key:
+                        task.shutDownEarly()
+                    elif task.trigger_key==key:
+                        task.trigger_times.append(response_time-task.startTime)
+                        task.waitForKeypress()
+                        continue
+    
+        trial=task.presentTrial(trial)
+        task.writeToLog(json.dumps(trial))
+        task.alldata.append(trial)
+    
+    
+    task.writeToLog(json.dumps({'trigger_times':task.trigger_times}))
+    task.writeData()
+    task.presentTextToWindow('Thank you. Please wait for the experimenter.')
+    task.waitForKeypress(task.quit_key)
+    
+    # clean up
+    task.closeWindow()
 
 #************************************
 # Start test
@@ -178,7 +180,7 @@ if test_on:
     test_config = makeConfigList(taskname = 'Temp_Struct_noFBTest', iden = subject_code, 
                                  num_blocks = test_num_blocks, block_len = block_len, probs1 = probs,
                                   probs2 = probs, action_keys = task.getActions())
-    test=tempStructTask(test_config,subject_code,bot = None, mode = 'noFB')
+    test=tempStructTask(test_config,subject_code,bot = None, mode = 'noFB', fullscreen = fullscr)
     test.writeToLog(test.toJSON())
     
     # prepare to start

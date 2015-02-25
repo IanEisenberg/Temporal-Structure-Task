@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from Load_Data import load_data
 from ggplot import *
 
-name = 'Pilot001_Ian_Temp_Struct_2015-01-29_11-29-04'
+name = 'Pilot002_Temp_Struct_2015-02-24_16-00-20'
 data_file = '../Data/' + name + '.yaml'
 taskinfo, df, dfa = load_data(data_file, name)
 
@@ -103,7 +103,7 @@ starts = [0, len(dfa.index)/2, 0]
 ends = [len(dfa.index)/2, len(dfa.index), len(dfa.index)]
 
 for start, end in zip(starts,ends):
-    block = 15
+    block = 12
     
     lswitch_position = np.array([np.mean([dfa.switch[i] == True for i in dfa.index[start:end] 
                             if dfa.FB.shift(1)[i]==0 and (i-1)%block == j]) 
@@ -146,7 +146,7 @@ error_index = [i for i in dfa.index if dfa.FB[i] == 0]
 
 plt.figure(figsize=(8,8))
 plt.plot([x[0] for x in avg_distance], [x[1] for x in avg_distance],error_index, [1]*len(error_index),'|')
-plt.axhline(15, color = 'red', linestyle = '--')
+plt.axhline(block, color = 'red', linestyle = '--')
 plt.title('Time between switches')
 plt.xlabel('trial numer')
 plt.ylabel('Trials since last switch')
@@ -158,13 +158,22 @@ plt.legend(['Switch Distance','Lose Event','Block Length'], loc = 'best')
 #     + stat_smooth(method = 'lm') + facet_wrap('switch')
 
 
+#***************************
+#Test analysis
+#***************************
 
+name = 'Pilot003_Temp_Struct_noFBTest_2015-02-24_15-39-52'
+data_file = '../Data/' + name + '.yaml'
+taskinfo, df, dfa = load_data(data_file, name, mode = 'test')
+a=[i  for i in dfa.index if dfa.switch[i] == True]
+avg_distance = [(x,x - a[i-1]) for i,x in enumerate(a)][1:]
 
-
-
-
-
-
-
+plt.figure(figsize=(8,8))
+plt.plot([x[0] for x in avg_distance], [x[1] for x in avg_distance])
+plt.axhline(block, color = 'red', linestyle = '--')
+plt.title('Time between switches')
+plt.xlabel('trial numer')
+plt.ylabel('Trials since last switch')
+plt.legend(['Switch Distance','Lose Event','Block Length'], loc = 'best')
 
 
