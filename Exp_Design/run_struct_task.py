@@ -2,8 +2,7 @@
 runtempStructTask
 """
 
-import psychopy
-from psychopy import visual, core, event, logging, data, misc, sound
+from psychopy import visual, core, event, logging, data, misc
 import os, socket, random
 import json
 import webbrowser
@@ -15,7 +14,7 @@ import test_bot
 #set-up some variables
 
 verbose=True
-fullscr=False  # change to True for full screen display
+fullscr=True  # change to True for full screen display
 subdata=[]
 practice_on = True
 test_on = True
@@ -34,7 +33,7 @@ f.write(subject_code + '\n')
 f.close()
 
 block_len = 12
-train_length = 10 #train_length in minutes
+train_length = 60 #train_length in minutes
 avg_trial_length = 2.75
 #Find the minimum even number of blocks to last at least 60 minutes
 num_blocks = int(round(train_length*60/(block_len*avg_trial_length)/2)*2)
@@ -86,6 +85,9 @@ if practice_on:
         job is to learn which they are.
         """,
         """
+        The task is hard! Stay motivated and try to learn
+        all you can.
+        
         We will start with a brief training session. 
         Please wait for the experimenter.
         """
@@ -120,6 +122,7 @@ task.setupWindow()
 task.defineStims()
 task.presentTextToWindow("""
                         We will now start the experiment.
+                        
                         There will be one break half way through. 
                         
                         Please wait for the experimenter.
@@ -181,7 +184,14 @@ if test_on:
     # prepare to start
     test.setupWindow()
     test.defineStims(task.getStims())
-    test.presentTextToWindow('Please wait for the experimenter')
+    test.presentTextToWindow("""
+                        In this next part the feedback will be invisible.
+                        
+                        Do your best to respond to the shapes as you would have
+                        in the last section. 
+                        
+                        Please wait for the experimenter.
+                        """)
     resp,test.startTime=test.waitForKeypress(test.trigger_key)
     test.checkRespForQuitKey(resp)
     event.clearEvents()
@@ -217,8 +227,8 @@ if test_on:
 #************************************
 points,trials = task.getPoints()
 performance = float(points)/(trials*probs[0])
-pay_bonus = round(performance*4*2)/2.0
-print('Participant won ' + str(round(performance,2)) + ' points. Bonus: $' + str(pay_bonus))
+pay_bonus = round(performance*5*2)/2.0
+print('Participant ' + subject_code + ' won ' + str(round(performance,2)) + ' points. Bonus: $' + str(pay_bonus))
 webbrowser.open_new('https://stanforduniversity.qualtrics.com/SE/?SID=SV_aV1hwNrNXgX5NYN')
 
 

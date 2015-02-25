@@ -2,7 +2,7 @@
 generic task using psychopy
 """
 
-from psychopy import visual, core, event, logging, data, misc, sound
+from psychopy import visual, core, event, logging, data, misc
 import sys,os
 import yaml
 import numpy as np
@@ -38,6 +38,7 @@ class tempStructTask:
         self.win=[]
         self.window_dims=[800,600]
         self.textStim=[]
+        self.stims=[]
         self.stimulusInfo=[]
         self.loadedStimulusFile=[]
         self.startTime=[]
@@ -133,12 +134,12 @@ class tempStructTask:
             self.stims = stims
         else:
             if self.mode == 'FB':
-                self.stims = [visual.ImageStim(self.win, image = '../Stimuli/93.tiff', units = 'cm', size = (5, 5)),
-                            visual.ImageStim(self.win, image = '../Stimuli/22.tiff', units = 'cm', size = (5, 5))]
+                self.stims = [visual.ImageStim(self.win, image = '../Stimuli/93.tiff', units = 'cm', size = (7, 7)),
+                            visual.ImageStim(self.win, image = '../Stimuli/22.tiff', units = 'cm', size = (7, 7))]
                 r.shuffle(self.stims)
-            elif self.mode == 'practice':
-                self.stims = [visual.ImageStim(self.win, image = '../Stimuli/12.tiff', units = 'cm', size = (5, 5)),
-                            visual.ImageStim(self.win, image = '../Stimuli/17.tiff', units = 'cm', size = (5, 5))]
+            elif self.mode == 'Practice':
+                self.stims = [visual.ImageStim(self.win, image = '../Stimuli/12.tiff', units = 'cm', size = (7, 7)),
+                            visual.ImageStim(self.win, image = '../Stimuli/17.tiff', units = 'cm', size = (7, 7))]
             
 
         

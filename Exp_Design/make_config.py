@@ -48,6 +48,28 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2),
         r.shuffle(keys)
         trial_count = 1
         curr_onset = 1 #initial onset
+       
+       
+       #ensure that the valid trial probabilities for each taskset are close to
+       #the desired probabilities
+       
+        diff = np.array([1,1])   
+        ts1_probs = np.array(tasksets['ts1']['probs'])
+        while (diff > [.025,.025]).any():
+                ts1_valid = [np.random.binomial(1, ts1_probs[0],block_len*num_blocks/2),np.random.binomial(1, ts1_probs[1],block_len*num_blocks/2)]
+                ts1_valid_probs = np.array([np.mean(array) for array in ts1_valid])
+                diff = np.array(abs(ts1_probs - ts1_valid_probs))
+        
+        diff = np.array([1,1])    
+        ts2_probs = np.array(tasksets['ts2']['probs'])
+        while (diff > [.025,.025]).any():
+                ts2_valid = [np.random.binomial(1, ts2_probs[0],block_len*num_blocks/2),np.random.binomial(1, ts2_probs[1],block_len*num_blocks/2)]
+                ts2_valid_probs = np.array([np.mean(array) for array in ts2_valid])
+                diff = np.array(abs(ts2_probs - ts2_valid_probs))
+
+        valid_trials = [ts1_valid, ts2_valid]
+            
+            
         #create blocks with a random order of stims (keeping the freqs equal)
         for block in range(num_blocks):
             #Define stim order, ensuring that no stim appears more than 3 times 
@@ -61,19 +83,12 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2),
             #Alternate tasksets
             curr_ts = tasksets[keys[block%2]]
             
-            probs_c = curr_ts['probs'][0]
-            probs_i = curr_ts['probs'][1]
-            counts = [1000,1000]
-            ideal_counts = np.round(np.array(curr_ts['probs'])*block_len)
-            #To keep the probabilities of rewarding stims locally consistent, we ensure
-            #that invalid stims only appear the expected number of times +-1
-            #I.E. if probabilities of reward are 60% for the target and 40% for the 
-            #other actions, in a block of 20 there will be 12+-1 rewards for the correct action
-            #and 8+-1 for the other actions.
-            while (abs(counts-ideal_counts) >= [2,2]).any():
-                PosFB_c = np.random.binomial(1,probs_c,block_len)
-                PosFB_i = np.random.binomial(1,probs_i,block_len)
-                counts = np.array([sum(PosFB_c),sum(PosFB_i)])
+        
+            PosFB_c = valid_trials[block%2][0][0:12]
+            PosFB_i = valid_trials[block%2][1][0:12]
+            valid_trials[block%2][0] = valid_trials[block%2][0][12:]
+            valid_trials[block%2][1] = valid_trials[block%2][1][12:]
+
             
 
             for trial in range(block_len):
@@ -91,6 +106,7 @@ def makeConfigList(taskname = 'Temp_Struct', iden = '000', probs1 = (.8, .2),
                 curr_onset += 2.5+r.random()*.5
                 
         return trialList
+
     
     yaml_input = makeTrialList()
     yaml_input.insert(0,initial_params)    
