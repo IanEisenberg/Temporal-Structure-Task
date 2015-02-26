@@ -17,6 +17,7 @@ verbose=True
 fullscr=True  # change to True for full screen display
 subdata=[]
 practice_on = True
+#if task_on = false then test will fail
 task_on = True
 test_on = True
 
