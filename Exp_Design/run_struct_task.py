@@ -229,8 +229,10 @@ if test_on:
 # Determine payment
 #************************************
 points,trials = task.getPoints()
-performance = float(points)/(trials*probs[0])
-pay_bonus = round(performance*5*2)/2.0
+#chance performance is .25, so normalize their actual performance (correct actions/trials)
+#by that
+performance = (float(points)/(trials)-.25)/.75
+pay_bonus = round(performance*5)
 print('Participant ' + subject_code + ' won ' + str(round(performance,2)) + ' points. Bonus: $' + str(pay_bonus))
 webbrowser.open_new('https://stanforduniversity.qualtrics.com/SE/?SID=SV_aV1hwNrNXgX5NYN')
 
